@@ -1,0 +1,17 @@
+[project]
+name = "polartides"
+version = "0.1.0"
+description = "TIDES schema validation of polars dataframes using dataframely."
+readme = "README.md"
+authors = [
+    { name = "Garin Wally", email = "gwally@mountainline.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "dataframely>=2.9.1",
+    "polars>=1.40.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.22,<0.9.0"]
+build-backend = "uv_build"
