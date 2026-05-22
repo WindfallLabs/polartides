@@ -1,7 +1,7 @@
 # polar-tides
-`polar-tides` is a Python library to assist in enforcing/validating `[polars](https://pola.rs/)` dataframes against the [TIDES](https://github.com/TIDES-transit/TIDES) data standards using [dataframely](https://github.com/Quantco/dataframely) schema objects.  
+`polar-tides` is a Python library to assist in enforcing/validating [polars](https://pola.rs/) dataframes against the [TIDES](https://github.com/TIDES-transit/TIDES) data standards using [dataframely](https://github.com/Quantco/dataframely) schema objects.  
 
-This library is in alpha andnot yet intended for production use. It is undergoing active development, so expect breaking changes.  
+This library is in alpha and not yet intended for production use. It is undergoing active development, so expect breaking changes.  
 
 
 ## Use

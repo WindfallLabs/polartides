@@ -37,7 +37,7 @@ class FareTransactions_Schema(dy.Schema):
     rider_category = dy.String(nullable=True)
     fare_product = dy.String(nullable=True)
     fare_period = dy.String(nullable=True)
-    fare_capped = dy.Boolean()
+    fare_capped = dy.Bool()
     token_id = dy.String(nullable=True)
     balance = dy.Float64(nullable=True)
 

@@ -55,7 +55,7 @@ class TrainCars_Schema(dy.Schema):
     capacity_seated = dy.UInt16(nullable=True)
     capacity_wheelchair = dy.UInt16(nullable=True)
     capacity_bike = dy.UInt16(nullable=True)
-    bike_rack = dy.Boolean(nullable=True)
+    bike_rack = dy.Bool(nullable=True)
     capacity_standing = dy.UInt16(nullable=True)
     train_car_type = dy.String(nullable=True)
 
@@ -87,5 +87,5 @@ class Vehicles_Schema(dy.Schema):
     capacity_seated = dy.UInt16(nullable=True)
     capacity_wheelchair = dy.UInt16(nullable=True)
     capacity_bike = dy.UInt16(nullable=True)
-    bike_rack = dy.Boolean(nullable=True)
+    bike_rack = dy.Bool(nullable=True)
     capacity_standing = dy.UInt16(nullable=True)
