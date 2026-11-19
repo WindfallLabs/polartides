@@ -16,7 +16,7 @@ class FareTransactions_Schema(dy.Schema):
     """
     Timestamped fare transaction, associated with devices.
     """
-    transaction_id = dy.String()
+    transaction_id = dy.String(primary_key=True)
     service_date = dy.Date()
     event_timestamp = dy.Datetime()
     location_ping_id = dy.String(nullable=True)
@@ -77,45 +77,102 @@ class FareTransactions_Schema(dy.Schema):
         return pl.col("fare_media_id").is_in(values)
 
 
-class PassengerEvents_Schema(dy.Schema):
+class DeviceEvents_Schema(dy.Schema):  # previously PassengerEvents_Schema
     """
-    Timestamped passenger-related events, including boardings and alightings.
+    Timestamped device-recorded events, including boardings, alightings, fare gate passages, and mobile validator events.
     """
-    passenger_event_id = dy.String()
-    service_date = dy.Date()
-    event_timestamp = dy.Datetime()
-    location_ping_id = dy.String(nullable=True)
-    trip_id_performed = dy.String(nullable=True)
-    trip_id_scheduled = dy.String(nullable=True)
-    trip_stop_sequence = dy.UInt16()
-    scheduled_stop_sequence = dy.UInt16(nullable=True)
-    event_type = dy.String()
-    vehicle_id = dy.String()
-    device_id = dy.String(nullable=True)
-    train_car_id = dy.String(nullable=True)
-    stop_id = dy.String(nullable=True)
-    pattern_id = dy.String(nullable=True)
-    event_count = dy.UInt16(nullable=True)
+    device_event_id = dy.String(
+        primary_key=True,
+        description="Identifies the recorded device event."
+    )
+    service_date = dy.Date(
+        description="Service date. References GTFS"
+    )
+    event_timestamp = dy.Datetime(
+        description="Recorded event timestamp."
+    )
+    location_ping_id = dy.String(
+        nullable=True,
+        description="Identifies the vehicle location where the device event occurred"
+    )
+    trip_id_performed = dy.String(
+        nullable=True,
+        description="Identifies the trip performed. If trips_performed table is used, this must be populated in order to link to it."
+    )
+    trip_id_scheduled = dy.String(
+        nullable=True,
+        description="Identifies the scheduled trip."
+    )
+    trip_stop_sequence = dy.UInt16(
+        min=1,
+        description="The actual order of stops visited within a performed trip. The values must start at 1 and must be consecutive along the trip. Required for vehicle-based events; optional for station-based or mobile device events not associated with a trip. Example: A bus departs the first stop and detours around the second and third scheduled stops, visiting one unscheduled stop and resuming regular service at the 4th scheduled stop. The scheduled_stop_sequence is [1, null, 4], and the trip_stop_sequence is [1, 2, 3]."
+    )
+    scheduled_stop_sequence = dy.UInt16(
+        min=0,
+        description="Scheduled order of stops for a particular trip. The values must increase along the trip but do not need to be consecutive. References GTFS"
+    )
+    event_type = dy.String(
+        description="Indicates the type of event recorded. Use passenger_boarded/passenger_alighted for vehicle boarding/alighting events. Use passenger_entry/passenger_exit for station-based events like fare gate passages."
+    )
+    vehicle_id = dy.String(
+        description="Identifies a vehicle. Required for vehicle-mounted device events; optional for station-based or mobile device events."
+    )
+    device_id = dy.String(
+        nullable=True,
+        description="Identifies the device that recorded the event. Links to the devices table to determine device type (vehicle-mounted, station-based, or mobile)."
+    )
+    employee_id = dy.String(
+        nullable=True,
+        description="Identifies the employee operating a handheld device, such as a fare inspector or conductor with a mobile validator."
+    )
+    train_car_id = dy.String(
+        nullable=True,
+        description="Identifies the train car."
+    )
+    stop_id = dy.String(
+        nullable=True,
+        description="Identifies the stop or station where the event occurred, recorded as of the time of the event. For vehicle-mounted device events, the stop the vehicle is serving. References GTFS"
+    )
+    latitude = dy.Float64(
+        min=-90.0,
+        max=90.0,
+        description="Degrees North, in the WGS-84 coordinate system. Used for mobile device events not at a fixed location."
+    )
+    longitude = dy.Float64(
+        min=-180.0,
+        max=180.0,
+        description="Degrees East, in the WGS-84 coordinate system. Used for mobile device events not at a fixed location."
+    )
+    pattern_id = dy.String(
+        nullable=True,
+        description="Identifies the unique stop-path for a trip, may be distinct from GTFS shapes.shape_id"
+    )
+    event_count = dy.UInt16(
+        min=0,
+        description="Count for this event. Default is 1. Use values > 1 only for truly simultaneous events (e.g., a parent carrying a child through a doorway as a single boarding event). Aggregated APC counts (e.g., ‘6 passengers boarded at this stop’) should be recorded in stop_visits, not device_events, since device_events is intended for discrete, instantaneous events. A value of 0 indicates that the event was recorded but no passengers were counted (e.g., door opened but no one boarded), which is distinct from null/missing data."
+    )
 
     @dy.rule()
     def event_type_values(cls) -> pl.Expr:
         values = {
-            "Vehicle arrived at stop",
-            "Vehicle departed stop",
-            "Door opened",
-            "Door closed",
-            "Passenger boarded",
-            "Passenger alighted",
-            "Kneel was engaged",
-            "Kneel was disengaged",
-            "Ramp was deployed",
-            "Ramp was raised",
-            "Ramp deployment failed",
-            "Lift was deployed",
-            "Lift was raised",
-            "Individual bike boarded",
-            "Individual bike alighted",
-            "Bike rack deployed",
+            "vehicle_arrived",
+            "vehicle_departed",
+            "door_opened",
+            "door_closed",
+            "passenger_boarded",
+            "passenger_alighted",
+            "passenger_entry",
+            "passenger_exit",
+            "kneel_engaged",
+            "kneel_disengaged",
+            "ramp_deployed",
+            "ramp_raised",
+            "ramp_failed",
+            "lift_deployed",
+            "lift_raised",
+            "bike_boarded",
+            "bike_alighted",
+            "bike_rack_deployed",
         }
         return pl.col("event_type").is_in(values)
 
@@ -124,7 +181,7 @@ class VehicleLocations_Schema(dy.Schema):
     """
     Timestamped vehicle locations and speeds.
     """
-    location_ping_id = dy.String()
+    location_ping_id = dy.String(primary_key=True)
     service_date = dy.Date(nullable=True)
     event_timestamp = dy.Datetime()
     trip_id_performed = dy.String(nullable=True)
